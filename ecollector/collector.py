@@ -54,12 +54,12 @@ class StatCollector(BaseCollector):
         query_filter = []
         import pdb; pdb.set_trace()
         if project_id:
-            query_filter.appand({'field':'project',
+            query_filter.append({'field':'project',
                                  'op':'eq',
                                  'value':project_id})
         if start:
-            query_filter.appand({'field':'timestamp',
-                                 'op':'eq',
+            query_filter.append({'field':'timestamp',
+                                 'op':'ge',
                                  'value':start})
         if end:
             query_filter.append({'field':'timestamp',
@@ -101,7 +101,11 @@ if __name__ == "__main__":
     cfg.CONF(project='ecollector')
 
     b = StatCollector()
-    data = b.get_resources_ids('instance')
+    data = b.get_resources('instance',
+                               start = '2017-06-07T01:00:00',
+                               end = '2017-06-07T02:00:00',
+                               project_id='8ab00ca9c3414762b5aa598b37b5a567')
+    import pdb; pdb.set_trace()
     print data
 
 
