@@ -3,6 +3,10 @@
 
 from ceilometerclient import client as cclient
 from keystoneauth1 import loading as ks_loading
+from keystoneclient.v3 import client as kclient
+
+from ecollector import convertor
+
 from oslo_config import cfg
 # import abc
 
@@ -34,12 +38,29 @@ class BaseCollector(object):
             auth=self.auth
         )
 
-        self._conn = cclient.get_client('2', session=self.session)
+        self._conn = None
+
+class ProjectCollector(BaseCollector):
+
+    def __init__(self):
+        super(ProjectCollector, self).__init__()
+        self._conn = kclient.Client(session=self.session)
+
+    def get_projects(self):
+        projects = self._conn.projects.list()
+        return projects
+
+    def get_users(self):
+        users = self._conn.users.list()
+        return users
+
 
 
 class StatCollector(BaseCollector):
-    #def __init__(self):
-        #super(StatCollector, self).__init__()
+
+    def __init__(self):
+        super(StatCollector, self).__init__()
+        self._conn = cclient.get_client('2', session=self.session)
 
     def get_resources(self,
                       meter,
@@ -52,7 +73,6 @@ class StatCollector(BaseCollector):
         # {'field': 'project', 'value': u'8ab00ca9c3414762b5aa598b37b5a567', 'op': 'eq'},
         # {'field': 'timestamp', 'value': '2017-06-07T02:00:00Z', 'op': 'le'}]
         query_filter = []
-        import pdb; pdb.set_trace()
         if project_id:
             query_filter.append({'field':'project',
                                  'op':'eq',
@@ -90,23 +110,48 @@ class StatCollector(BaseCollector):
                           q_filter=None,
                           aggre=None):
 
-        resources = self.get_resources('instance')
+        resources = self.get_resources('instance',
+                                       start=start,
+                                       end=end,
+                                       project_id=project_id)
 
         return [resource.groupby['resource_id']
                 for resource in resources]
+
+    def get_compute(self, project_id, start=None, end=None):
+
+        resource_ids = self.get_resources_ids('instance',
+                                              start,
+                                              end,
+                                              project_id)
+
+        resources = {}
+        for _id in resource_ids:
+            _resource = self._conn.resources.get(_id)
+            resources[_id] = _resource
+
+        return resources
+
+
+    def get_network(self, project_id, start=None, end=None):
+        pass
 
 
 if __name__ == "__main__":
     from oslo_config import cfg
     cfg.CONF(project='ecollector')
 
-    b = StatCollector()
-    data = b.get_resources('instance',
-                               start = '2017-06-07T01:00:00',
-                               end = '2017-06-07T02:00:00',
-                               project_id='8ab00ca9c3414762b5aa598b37b5a567')
-    import pdb; pdb.set_trace()
-    print data
+    #b = StatCollector()
+    #data = b.get_compute(start = '2017-06-07T01:00:00',
+                         # end = '2017-06-07T02:00:00',
+                         # project_id='8ab00ca9c3414762b5aa598b37b5a567')
+    # print data
+
+    k = ProjectCollector()
+    #u = k.get_users()
+    projects_list = k.get_projects()
+    print projects_list
+
 
 
 
