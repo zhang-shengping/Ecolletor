@@ -31,37 +31,32 @@ class CollectService(cotyledon.Service):
 
 
     def run(self):
-        projects_collector = ProjectCollector()
-        LOG.warn('auth_url is %s', cfg.CONF.service_credentials.auth_url)
-        projects_collector.get_projects()
-        start = time.time()
-        period = cfg.CONF.collector.period
-        end = start + period
-        start_timestamp = utils.unix_to_strtime(start)
-        end_timestamp = utils.unix_to_strtime(end)
-        LOG.warn("start_time: %s"%start_timestamp)
-        LOG.warn("end_time: %s"%end_timestamp)
-        # while self.running:
-            # projects_collector = ProjectCollector()
-            # stat_collector = StatCollector()
+        while self.running:
+            projects_collector = ProjectCollector()
+            stat_collector = StatCollector()
 
-            # start = time.time()
-            # period = cfg.CONF.collector.period
-            # end = start + period
+            start = time.time()
+            period = cfg.CONF.collector.period
+            end = start + period
 
-            # start_timestamp = time.strftime("%Y-%m-%d %H:%M:%S", start)
-            # end_timestamp = time.strftime("%Y-%m-%d %H:%M:%S", end)
+            # Ceilometer use UTC time,not localtime
+            start_timestamp = utils.unix_to_strtime(start)
+            end_timestamp = utils.unix_to_strtime(end)
 
-            # projects = projects_collector.get_projects()
-            # for _proj in projects:
-                # resources = stat_collector.get_compute(
-                    # project_id=_proj.id,
-                    # start=start_timestamp,
-                    # end=end_timestamp
-                # )
+            projects = projects_collector.get_projects()
+            print len(projects)
 
-            # time.sleep(3600)
-            # print resources
+            for _proj in projects:
+                resources = stat_collector.get_compute(
+                    project_id=_proj.id,
+                    start=start_timestamp,
+                    end=end_timestamp
+                )
+                print resources
+            self.running = False
+
+            #time.sleep(3600)
+            #print resources
 
     def terminate(self):
         self.running = False

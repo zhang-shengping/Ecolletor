@@ -126,6 +126,7 @@ class StatCollector(BaseCollector):
                                               project_id)
 
         resources = {}
+        print resource_ids
         for _id in resource_ids:
             _resource = self._conn.resources.get(_id)
             resources[_id] = _resource

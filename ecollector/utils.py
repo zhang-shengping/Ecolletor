@@ -6,7 +6,7 @@ import datetime
 def unix_to_strtime(time):
     strtime = datetime.datetime.fromtimestamp(
         time
-    ).strftime('%Y-%m-%d %H:%M:%S')
+    ).strftime('%Y-%m-%dT%H:%M:%SZ')
 
     return strtime
 
