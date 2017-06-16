@@ -3,13 +3,10 @@
 
 import datetime
 
-def unix_to_strtime(time):
-    strtime = datetime.datetime.fromtimestamp(
-        time
-    ).strftime('%Y-%m-%dT%H:%M:%SZ')
-
-    return strtime
-
-def str_to_unixtime(time):
-    pass
-
+def time_to_str(time, period=None):
+    if period != None:
+        endtime = time - datetime.timedelta(
+            seconds=period)
+        return endtime.strftime(
+            '%Y-%m-%dT%H:%M:%SZ')
+    return time.strftime('%Y-%m-%dT%H:%M:%SZ')

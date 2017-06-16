@@ -5,8 +5,7 @@ from ecollector.collector import ProjectCollector
 from ecollector.collector import StatCollector
 from ecollector import utils
 from oslo_config import cfg
-# import datetime
-import time
+import datetime
 import cotyledon
 import logging
 
@@ -35,16 +34,17 @@ class CollectService(cotyledon.Service):
             projects_collector = ProjectCollector()
             stat_collector = StatCollector()
 
-            start = time.time()
-            period = cfg.CONF.collector.period
-            end = start + period
-
             # Ceilometer use UTC time,not localtime
-            start_timestamp = utils.unix_to_strtime(start)
-            end_timestamp = utils.unix_to_strtime(end)
+            start = datetime.datetime.utcnow()
+            period = cfg.CONF.collector.period
+
+            start_timestamp = utils.time_to_str(start, period)
+            end_timestamp = utils.time_to_str(start)
 
             projects = projects_collector.get_projects()
             print len(projects)
+            print start_timestamp
+            print end_timestamp
 
             for _proj in projects:
                 resources = stat_collector.get_compute(
